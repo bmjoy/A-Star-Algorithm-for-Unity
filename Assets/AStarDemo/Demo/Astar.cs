@@ -32,7 +32,8 @@ public class Astar : MonoBehaviour {
         startPos.f = startPos.g + startPos.h;
         openList.Add(startPos);
 
-        LookForPath();
+        StartCoroutine(LookForPath());
+        //LookForPath();
     }
 
     void initMap()
@@ -111,21 +112,26 @@ public class Astar : MonoBehaviour {
         return p1.f.CompareTo(p2.f);
     }
 
-    private void LookForPath()
+    private IEnumerator LookForPath()
     {
         Pos curPos;
         while (openList.Count != 0)
         {
             curPos = openList[0];
+            curPos.trans.GetComponent<MeshRenderer>().material.color = Color.magenta;
+            yield return new WaitForSeconds(1f);
             openList.RemoveAt(0);
             if (curPos == endPos)
             {
+                curPos.trans.GetComponent<MeshRenderer>().material.color = Color.red;
                 Pos p = curPos.parent;
                 while (p != startPos)
                 {
                     p.trans.GetComponent<MeshRenderer>().material.color = Color.blue;
                     p = p.parent;
                 }
+                p.trans.GetComponent<MeshRenderer>().material.color = Color.yellow;
+                break;
             }
             else
             {
@@ -135,9 +141,23 @@ public class Astar : MonoBehaviour {
                     if (blockDic.ContainsKey(tmpV3)) continue;
 
                     Pos tmpPos = mapDic[tmpV3];
+
+                    tmpPos.trans.GetComponent<MeshRenderer>().material.color = Color.green;
+                    yield return new WaitForSeconds(0.3f);
+
                     float g = curPos.g + neighbor_Dis(i);
                     if ((openList.Contains(tmpPos) || closeList.Contains(tmpPos)) && tmpPos.g <= g)
                     {
+                        if (openList.Contains(tmpPos))
+                        {
+                            tmpPos.trans.GetComponent<MeshRenderer>().material.color = Color.cyan;
+                            yield return new WaitForSeconds(0.3f);
+                        }
+                        else
+                        {
+                            tmpPos.trans.GetComponent<MeshRenderer>().material.color = Color.grey;
+                            yield return new WaitForSeconds(0.3f);
+                        }
                         continue;
                     }
                     else
@@ -149,13 +169,25 @@ public class Astar : MonoBehaviour {
 
                         if (closeList.Contains(tmpPos)) closeList.Remove(tmpPos);
 
-                        if (!openList.Contains(tmpPos)) openList.Add(tmpPos);
+                        if (!openList.Contains(tmpPos))
+                        {
+                            openList.Add(tmpPos);
 
+                            tmpPos.trans.GetComponent<MeshRenderer>().material.color = Color.cyan;
+                            yield return new WaitForSeconds(0.3f);
+
+                        }else
+                        {
+                            tmpPos.trans.GetComponent<MeshRenderer>().material.color = Color.white;
+                            yield return new WaitForSeconds(0.3f);
+                        }
                         openList.Sort(Comp);
                     }
                 }
             }
+            curPos.trans.GetComponent<MeshRenderer>().material.color = Color.grey;
             closeList.Add(curPos);
+            yield return new WaitForSeconds(0.3f);
         }
     }
 }
